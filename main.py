@@ -13,18 +13,20 @@ from typing import Optional
 from dotenv import load_dotenv
 import os
 
+#Load environment var
 load_dotenv()
 ALGORITHM=os.getenv("algorithm")
 DB_CONNECTION=os.getenv("db_connection")
 SECRET_KEY=os.getenv("secret_key")
 EXPIRY_TIME=30
-#create engine
+
+#create engine DB CONNECTION
 engine=create_engine(DB_CONNECTION)
 
 #make session
 session_local=sessionmaker(bind=engine)
 
-#
+#For base model
 base=declarative_base()
 
 #create table for login
@@ -48,7 +50,7 @@ class TaskModel(base):
 #
 base.metadata.create_all(bind=engine)
 
-#db session provide 
+#Dependency db session provide 
 def get_db():
     db = session_local()
     try:
@@ -131,7 +133,7 @@ def secure(email=Depends(verify_token)):
 
 class TaskCreate(BaseModel):
     title:str
-    description:Optional[str]
+    description:Optional[str] = None
     status:str
     due_date:date
 
@@ -151,9 +153,7 @@ def create_task(task:TaskCreate,db:Session=Depends(get_db),email=Depends(verify_
     return{"message":"task sucessfully created! "}
 
 @app.get("/get_task")
-def get_task(db:Session=Depends(get_db),email=Depends(verify_token)):
-    # if email is None:
-    #     raise HTTPException(status_code=401,detail="unauthorised")
+def get_all_task(db:Session=Depends(get_db),email=Depends(verify_token)):
     current_user=db.query(user_detail).filter(user_detail.email==email).first()
     if current_user is None:
         raise HTTPException(status_code=404,detail="current user not found")
@@ -161,10 +161,10 @@ def get_task(db:Session=Depends(get_db),email=Depends(verify_token)):
     return data
 
 @app.get("/get_task/{task_id}")
-def get_task(task_id:int,db:Session=Depends(get_db),email=Depends(verify_token)):
+def get_single_task(task_id:int,db:Session=Depends(get_db),email=Depends(verify_token)):
     current_user=db.query(user_detail).filter(user_detail.email==email).first()
     if current_user is None:
-        raise HTTPException(status_code=401,detail="current user not found")
+        raise HTTPException(status_code=404,detail="current user not found")
     data=db.query(TaskModel).filter(TaskModel.user_id==current_user.id,task_id==TaskModel.id).first()
     if data is None:
         raise HTTPException(status_code=404,detail="Task not found")
