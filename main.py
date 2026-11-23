@@ -133,7 +133,7 @@ def secure(email=Depends(verify_token)):
 
 class TaskCreate(BaseModel):
     title:str
-    description:Optional[str] = None
+    description:Optional[str]=None
     status:str
     due_date:date
 
