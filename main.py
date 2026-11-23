@@ -6,9 +6,9 @@ from fastapi.security import OAuth2PasswordRequestForm,OAuth2PasswordBearer
 from passlib.context import CryptContext
 from jose import jwt ,JWTError
 from datetime import datetime,timedelta,timezone,date
-from pydantic import BaseModel,EmailStr
+from pydantic import BaseModel,EmailStr,field_validator,Field
 from sqlalchemy import ForeignKey
-from typing import Optional
+from typing import Optional,Literal
 
 from dotenv import load_dotenv
 import os
@@ -97,7 +97,14 @@ def verify_token(token:str=Depends(oauth_schema)):
 class user_register(BaseModel):
     name:str
     email:EmailStr
-    password:str
+    password:str=Field(min_length=6)
+
+    @field_validator("email")
+    @classmethod
+    def email_validate(cls,value):
+        if not value.endswith('@gmail.com'):
+            raise ValueError("Only gmail is allowed")
+        return value
 
 #user register
 @app.post("/register")
@@ -134,7 +141,7 @@ def secure(email=Depends(verify_token)):
 class TaskCreate(BaseModel):
     title:str
     description:Optional[str]=None
-    status:str
+    status:Literal['pending','progress','completed']
     due_date:date
 
 @app.post("/create_task")
@@ -173,7 +180,7 @@ def get_single_task(task_id:int,db:Session=Depends(get_db),email=Depends(verify_
 class TaskUpdate(BaseModel):
     title:str
     description:Optional[str]=None
-    status:str
+    status:Literal['pending','progress','completed']
     due_date:date
 @app.put("/update/{task_id}")
 def update_task(update_task:TaskUpdate,task_id:int,db:Session=Depends(get_db),email=Depends(verify_token)):
