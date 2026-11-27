@@ -119,6 +119,7 @@ def register(user:user_register,db:Session=Depends(get_db)):
     db.add(user_data)
     db.commit()
     db.refresh(user_data)
+    send_email(user_data.email,"Welcome to Task Management!",f"<h2>Hello {user_data.name}!</h2><h4>Developed by Taufique Hayat | B.Tech Computer Science and Engineering student at Katihar Engineering College</h4><p>Your account has been created successfully.</p>")
     return {"message":"you have sucessfully registerd! "}
 
 #user login
@@ -134,9 +135,9 @@ def login(user_data:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(get_d
             "token_type":"bearer"
             }
 
-@app.get("/secure")
-def secure(email=Depends(verify_token)):
-    return{"message":"scure route acess","email":email}
+@app.get("/")
+def home():
+    return{"message":"Welcome to Task Management System API"}
 
 class TaskCreate(BaseModel):
     title:str
@@ -210,3 +211,31 @@ def task_delete(task_id:int,db:Session=Depends(get_db),email=Depends(verify_toke
     db.commit()
     return{"message":"Task deleted sucessfuly! "}
 
+
+import resend
+RESEND_API_KEY=os.getenv("RESEND_API_KEY")
+
+#SDK Configuration
+resend.api_key=RESEND_API_KEY
+
+def send_email(toEmail,subject,message):
+
+#Parameters
+    parameter={"from":"onboarding@resend.dev",
+               "to":[toEmail],
+               "subject":subject,
+               "html":message
+               }
+    response=resend.Emails.send(parameter)
+    return response
+
+# # @app.post("/resend_email")
+# def Re_send_email(user:user_register):
+#    email=user.email
+#    result = send_email(toEmail=email,subject="	Welcome to Task Management!",message=f"""
+#         <h2>Hello {user.name}!</h2>
+#         <p>Your account has been successfully created.</p>
+#         <p>Welcome to Task Management.</p>
+#     """
+# )
+#    return {"message":"E-mail is Sucessfuly sent","result":result}
