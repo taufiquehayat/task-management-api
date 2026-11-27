@@ -228,14 +228,3 @@ def send_email(toEmail,subject,message):
                }
     response=resend.Emails.send(parameter)
     return response
-
-# # @app.post("/resend_email")
-# def Re_send_email(user:user_register):
-#    email=user.email
-#    result = send_email(toEmail=email,subject="	Welcome to Task Management!",message=f"""
-#         <h2>Hello {user.name}!</h2>
-#         <p>Your account has been successfully created.</p>
-#         <p>Welcome to Task Management.</p>
-#     """
-# )
-#    return {"message":"E-mail is Sucessfuly sent","result":result}
