@@ -13,7 +13,7 @@ from typing import Optional,Literal
 from dotenv import load_dotenv
 import os
 
-#Load environment var
+#Load environment variable
 load_dotenv()
 ALGORITHM=os.getenv("algorithm")
 DB_CONNECTION=os.getenv("db_connection")
@@ -219,7 +219,6 @@ RESEND_API_KEY=os.getenv("RESEND_API_KEY")
 resend.api_key=RESEND_API_KEY
 
 def send_email(toEmail,subject,message):
-
 #Parameters
     parameter={"from":"onboarding@resend.dev",
                "to":[toEmail],
